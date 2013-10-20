@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Exify</string>
+    <string name="action_settings">Settings</string>
+    <string name="chooser_label">Select a JPEG file</string>
+    <string name="select_label">Select</string>
+    <string name="no_selection_message">No JPEG file selected</string>
+	
+</resources>
