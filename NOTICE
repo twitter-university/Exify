@@ -1,0 +1,12 @@
+Android Exify Application
+Copyright 2013 Twitter, Inc.
+
+This product requires/links-to aFileChooser co-developed by Paul Burke:
+https://github.com/iPaulPro/aFileChooser
+
+This product includes jhead library developed by Matthias Wandel:
+http://www.sentex.net/~mwandel/jhead/
+
+This product was partially inspired by AOSP's libexif and libexif_jni:
+https://android.googlesource.com/platform/external/jhead/+/android-4.3_r3/
+

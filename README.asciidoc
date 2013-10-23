@@ -1,0 +1,11 @@
+= About Exify
+
+Exify is a simple Android application that can load and display thumbnails and EXIF info from JPEG images. 
+
+This application was built to explain how NDK/JNI can enable an Android Java-based application logic to access code written in C.
+
+== Requirements
+
+* https://github.com/iPaulPro/aFileChooser as a library project
+* NDK
+* ADT
