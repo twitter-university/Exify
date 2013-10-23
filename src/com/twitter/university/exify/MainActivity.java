@@ -6,10 +6,12 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore.MediaColumns;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Menu;
@@ -79,12 +81,21 @@ public class MainActivity extends Activity implements OnClickListener {
         case FILE_CHOOSE_REQUEST:
             if (resultCode == RESULT_OK) {
                 final Uri uri = data.getData();
-                File file = FileUtils.getFile(uri);
-                this.fileSelection.setText(file.getName());
+                Log.d(TAG, "Got file URI " + uri);
+                File file = asFile(uri);
+                if (file == null) {
+                    Toast.makeText(this, R.string.unknown_selection_message,
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 String filePath = file.getAbsolutePath();
+                Log.d(TAG, "Got file path " + filePath);
+                this.fileSelection.setText(file.getName());
                 try {
                     byte[] thumbnailData = JHead.getThumbnail(filePath);
                     if (thumbnailData != null && thumbnailData.length > 0) {
+                        Log.d(TAG, "Got thumbnail of " + thumbnailData.length
+                                + " bytes");
                         Bitmap bMap = BitmapFactory.decodeByteArray(
                                 thumbnailData, 0, thumbnailData.length);
                         thumbnail.setImageBitmap(bMap);
@@ -92,6 +103,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
                     Map<String, String> imageInfo = JHead
                             .getImageInfo(filePath);
+                    Log.d(TAG, "Loaded: " + imageInfo);
                     this.exifAttributes.removeAllViews();
                     for (Map.Entry<String, String> entry : imageInfo.entrySet()) {
                         TableRow row = new TableRow(this);
@@ -116,12 +128,31 @@ public class MainActivity extends Activity implements OnClickListener {
 
                         this.exifAttributes.addView(row);
                     }
-                    Log.d(TAG, "Loaded: " + imageInfo);
                 } catch (IOException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG)
                             .show();
                 }
             }
+        }
+    }
+
+    private static final String[] MEDIA_DATA_ONLY_PROJECTION = { MediaColumns.DATA };
+
+    private File asFile(Uri uri) {
+        String scheme = uri.getScheme();
+        if ("file".equals(scheme)) {
+            return FileUtils.getFile(uri);
+        } else if ("content".equals(scheme)) {
+            Cursor cursor = super.getContentResolver().query(uri,
+                    MEDIA_DATA_ONLY_PROJECTION, null, null, null);
+            try {
+                return cursor.moveToFirst() ? new File(cursor.getString(0))
+                        : null;
+            } finally {
+                cursor.close();
+            }
+        } else {
+            return null;
         }
     }
 }

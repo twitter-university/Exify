@@ -6,6 +6,7 @@
     <string name="chooser_label">Select a JPEG file</string>
     <string name="select_label">Select</string>
     <string name="no_selection_message">No JPEG file selected</string>
+    <string name="unknown_selection_message">Don\'t understand how to load this file </string>
     <string name="comments_hint">Enter JPEG File Comment</string>
     <string name="save_label">Save Comments to File</string>
     <string name="thumbnail">Thumbnail</string>
