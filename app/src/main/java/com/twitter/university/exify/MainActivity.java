@@ -1,9 +1,5 @@
 package com.twitter.university.exify;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -26,13 +22,17 @@ import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
 public class MainActivity extends Activity implements OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final LinearLayout.LayoutParams TABLE_ROW_LAYOUT_PARAMS = new LinearLayout.LayoutParams(
             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
     private static final TableRow.LayoutParams TABLE_CELL_LAYOUT_PARAMS = new TableRow.LayoutParams(
             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-    private static final String[] MEDIA_DATA_ONLY_PROJECTION = { MediaColumns.DATA };
+    private static final String[] MEDIA_DATA_ONLY_PROJECTION = {MediaColumns.DATA};
     private static final int FILE_CHOOSE_REQUEST = 1;
     private TextView fileSelection;
     private Button fileChooser;
@@ -72,17 +72,17 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-        case FILE_CHOOSE_REQUEST:
-            if (resultCode == RESULT_OK) {
-                Log.d(TAG, "Got result " + data);
-                File file = getFile(data);
-                if (file == null) {
-                    Toast.makeText(this, R.string.unknown_selection_message,
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    exify(file);
+            case FILE_CHOOSE_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    Log.d(TAG, "Got result " + data);
+                    File file = getFile(data);
+                    if (file == null) {
+                        Toast.makeText(this, R.string.unknown_selection_message,
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        exify(file);
+                    }
                 }
-            }
         }
     }
 
@@ -99,23 +99,31 @@ public class MainActivity extends Activity implements OnClickListener {
             cursor.close();
         }
     }
-    
+
     private void exify(File file) {
         String filePath = file.getAbsolutePath();
-        Log.d(TAG, "Got file path " + filePath);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Got file path " + filePath);
+        }
         this.fileSelection.setText(file.getName());
         try {
+            // NOTICE: File I/O *should* not be done on the UI thread
+            // but for the sake of brevity we are skipping best practices
             byte[] thumbnailData = JHead.getThumbnail(filePath);
             if (thumbnailData != null && thumbnailData.length > 0) {
-                Log.d(TAG, "Got thumbnail of " + thumbnailData.length
-                        + " bytes");
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "Got thumbnail of " + thumbnailData.length
+                            + " bytes");
+                }
                 Bitmap bMap = BitmapFactory.decodeByteArray(thumbnailData, 0,
                         thumbnailData.length);
                 thumbnail.setImageBitmap(bMap);
             }
 
             Map<String, String> imageInfo = JHead.getImageInfo(filePath);
-            Log.d(TAG, "Loaded: " + imageInfo);
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Loaded: " + imageInfo);
+            }
             this.exifAttributes.removeAllViews();
             for (Map.Entry<String, String> entry : imageInfo.entrySet()) {
                 TableRow row = new TableRow(this);

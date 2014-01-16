@@ -5,6 +5,7 @@ android {
     buildToolsVersion "19.0.1"
 
     defaultConfig {
+        versionCode getVersionCodeFromManifest()
         minSdkVersion 19
         targetSdkVersion 19
 
@@ -23,24 +24,44 @@ android {
 
         debug {
             jniDebugBuild true
+            ndk {
+                cFlags "-DDEBUG"
+            }
         }
     }
 
     productFlavors {
         x86 {
+            versionCode Integer.parseInt("6" + defaultConfig.versionCode)
             ndk {
                 abiFilter "x86"
             }
         }
-        arm {
-            ndk {
-                abiFilter "armeabi-v7a"
-            }
-        }
         mips {
+            versionCode Integer.parseInt("4" + defaultConfig.versionCode)
             ndk {
                 abiFilter "mips"
             }
         }
+        armv7 {
+            versionCode Integer.parseInt("2" + defaultConfig.versionCode)
+            ndk {
+                abiFilter "armeabi-v7a"
+            }
+        }
+        armv {
+            versionCode Integer.parseInt("1" + defaultConfig.versionCode)
+            ndk {
+                abiFilter "armeabi"
+            }
+        }
     }
+}
+
+def getVersionCodeFromManifest() {
+    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
+    def pattern = java.util.regex.Pattern.compile("versionCode=\"(\\d+)\"")
+    def matcher = pattern.matcher(manifestFile.getText())
+    matcher.find()
+    return Integer.parseInt(matcher.group(1))
 }
