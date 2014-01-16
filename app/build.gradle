@@ -16,12 +16,15 @@ android {
 
     buildTypes {
         release {
+            jniDebugBuild false
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
-    }
 
-    buildTypes.debug.jniDebugBuild false
+        debug {
+            jniDebugBuild true
+        }
+    }
 
     productFlavors {
         x86 {
