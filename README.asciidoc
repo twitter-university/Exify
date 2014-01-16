@@ -6,6 +6,5 @@ This application was built to explain how NDK/JNI can enable Java-based Android 
 
 == Requirements
 
-* https://github.com/iPaulPro/aFileChooser[aFileChooser] as a library project
 * http://developer.android.com/tools/sdk/ndk/index.html[NDK] to compile native code
-* http://developer.android.com/sdk/index.html[ADT] to compile Java code and package APK
+* http://developer.android.com/sdk/index.html[SDK] to compile Java code and package the APK

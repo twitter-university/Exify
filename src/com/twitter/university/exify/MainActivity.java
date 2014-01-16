@@ -26,11 +26,13 @@ import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ipaulpro.afilechooser.utils.FileUtils;
-
 public class MainActivity extends Activity implements OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
-
+    private static final LinearLayout.LayoutParams TABLE_ROW_LAYOUT_PARAMS = new LinearLayout.LayoutParams(
+            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+    private static final TableRow.LayoutParams TABLE_CELL_LAYOUT_PARAMS = new TableRow.LayoutParams(
+            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+    private static final String[] MEDIA_DATA_ONLY_PROJECTION = { MediaColumns.DATA };
     private static final int FILE_CHOOSE_REQUEST = 1;
     private TextView fileSelection;
     private Button fileChooser;
@@ -60,99 +62,86 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == this.fileChooser) {
-            final Intent getContentIntent = new Intent(
-                    Intent.ACTION_GET_CONTENT);
-            getContentIntent.setType("image/jpeg");
-            getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
-            Intent intent = Intent.createChooser(getContentIntent,
-                    super.getText(R.string.chooser_label));
+            final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/jpeg");
             super.startActivityForResult(intent, FILE_CHOOSE_REQUEST);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        TableRow.LayoutParams cellParams = new TableRow.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-
         switch (requestCode) {
         case FILE_CHOOSE_REQUEST:
             if (resultCode == RESULT_OK) {
-                final Uri uri = data.getData();
-                Log.d(TAG, "Got file URI " + uri);
-                File file = asFile(uri);
+                Log.d(TAG, "Got result " + data);
+                File file = getFile(data);
                 if (file == null) {
                     Toast.makeText(this, R.string.unknown_selection_message,
                             Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                String filePath = file.getAbsolutePath();
-                Log.d(TAG, "Got file path " + filePath);
-                this.fileSelection.setText(file.getName());
-                try {
-                    byte[] thumbnailData = JHead.getThumbnail(filePath);
-                    if (thumbnailData != null && thumbnailData.length > 0) {
-                        Log.d(TAG, "Got thumbnail of " + thumbnailData.length
-                                + " bytes");
-                        Bitmap bMap = BitmapFactory.decodeByteArray(
-                                thumbnailData, 0, thumbnailData.length);
-                        thumbnail.setImageBitmap(bMap);
-                    }
-
-                    Map<String, String> imageInfo = JHead
-                            .getImageInfo(filePath);
-                    Log.d(TAG, "Loaded: " + imageInfo);
-                    this.exifAttributes.removeAllViews();
-                    for (Map.Entry<String, String> entry : imageInfo.entrySet()) {
-                        TableRow row = new TableRow(this);
-                        row.setLayoutParams(rowParams);
-
-                        TextView cell;
-
-                        cell = new TextView(this);
-                        cell.setText(entry.getKey());
-                        cell.setTextAppearance(this, R.style.tableRowHeader);
-                        cell.setPadding(0, 0, 10, 0);
-                        row.addView(cell, cellParams);
-
-                        cell = new TextView(this);
-                        cell.setText(entry.getValue());
-                        cell.setEllipsize(TruncateAt.MARQUEE);
-                        cell.setSingleLine();
-                        cell.setFocusable(true);
-                        cell.setFocusableInTouchMode(true);
-                        cell.setLayoutParams(cellParams);
-                        row.addView(cell);
-
-                        this.exifAttributes.addView(row);
-                    }
-                } catch (IOException e) {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG)
-                            .show();
+                } else {
+                    exify(file);
                 }
             }
         }
     }
 
-    private static final String[] MEDIA_DATA_ONLY_PROJECTION = { MediaColumns.DATA };
-
-    private File asFile(Uri uri) {
-        String scheme = uri.getScheme();
-        if ("file".equals(scheme)) {
-            return FileUtils.getFile(uri);
-        } else if ("content".equals(scheme)) {
-            Cursor cursor = super.getContentResolver().query(uri,
-                    MEDIA_DATA_ONLY_PROJECTION, null, null, null);
-            try {
-                return cursor.moveToFirst() ? new File(cursor.getString(0))
-                        : null;
-            } finally {
-                cursor.close();
-            }
-        } else {
+    private File getFile(Intent intent) {
+        Uri uri = intent.getData();
+        if (uri == null) {
             return null;
+        }
+        final Cursor cursor = super.getContentResolver().query(uri,
+                MEDIA_DATA_ONLY_PROJECTION, null, null, null);
+        try {
+            return cursor.moveToFirst() ? new File(cursor.getString(0)) : null;
+        } finally {
+            cursor.close();
+        }
+    }
+    
+    private void exify(File file) {
+        String filePath = file.getAbsolutePath();
+        Log.d(TAG, "Got file path " + filePath);
+        this.fileSelection.setText(file.getName());
+        try {
+            byte[] thumbnailData = JHead.getThumbnail(filePath);
+            if (thumbnailData != null && thumbnailData.length > 0) {
+                Log.d(TAG, "Got thumbnail of " + thumbnailData.length
+                        + " bytes");
+                Bitmap bMap = BitmapFactory.decodeByteArray(thumbnailData, 0,
+                        thumbnailData.length);
+                thumbnail.setImageBitmap(bMap);
+            }
+
+            Map<String, String> imageInfo = JHead.getImageInfo(filePath);
+            Log.d(TAG, "Loaded: " + imageInfo);
+            this.exifAttributes.removeAllViews();
+            for (Map.Entry<String, String> entry : imageInfo.entrySet()) {
+                TableRow row = new TableRow(this);
+                row.setLayoutParams(TABLE_ROW_LAYOUT_PARAMS);
+
+                TextView cell;
+
+                cell = new TextView(this);
+                cell.setText(entry.getKey());
+                cell.setTextAppearance(this, R.style.tableRowHeader);
+                cell.setPadding(0, 0, 10, 0);
+                row.addView(cell, TABLE_CELL_LAYOUT_PARAMS);
+
+                cell = new TextView(this);
+                cell.setText(entry.getValue());
+                cell.setEllipsize(TruncateAt.MARQUEE);
+                cell.setSingleLine();
+                cell.setFocusable(true);
+                cell.setFocusableInTouchMode(true);
+                cell.setLayoutParams(TABLE_CELL_LAYOUT_PARAMS);
+                row.addView(cell);
+
+                this.exifAttributes.addView(row);
+            }
+        } catch (IOException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 }
