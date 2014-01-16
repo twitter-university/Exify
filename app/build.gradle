@@ -58,6 +58,7 @@ android {
     }
 }
 
+// See http://ph0b.com/android-studio-gradle-and-ndk-integration/
 def getVersionCodeFromManifest() {
     def manifestFile = file(android.sourceSets.main.manifest.srcFile)
     def pattern = java.util.regex.Pattern.compile("versionCode=\"(\\d+)\"")
