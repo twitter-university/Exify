@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         versionCode getVersionCodeFromManifest()
-        minSdkVersion 19
-        targetSdkVersion 19
+        minSdkVersion 18
+        targetSdkVersion 18
 
         ndk {
             moduleName "jhead_jni"
