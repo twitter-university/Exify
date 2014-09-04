@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.provider.MediaStore.MediaColumns;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -51,12 +50,6 @@ public class MainActivity extends Activity implements OnClickListener {
         this.thumbnail = (ImageView) super.findViewById(R.id.thumbnail);
         this.exifAttributes = (TableLayout) super
                 .findViewById(R.id.exif_attributes);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
     }
 
     @Override
@@ -117,7 +110,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
                 Bitmap bMap = BitmapFactory.decodeByteArray(thumbnailData, 0,
                         thumbnailData.length);
-                thumbnail.setImageBitmap(bMap);
+                this.thumbnail.setImageBitmap(bMap);
             }
 
             Map<String, String> imageInfo = JHead.getImageInfo(filePath);
