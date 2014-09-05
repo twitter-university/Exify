@@ -1,13 +1,14 @@
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1"
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
 
     defaultConfig {
-        versionCode getVersionCodeFromManifest()
-        minSdkVersion 18
-        targetSdkVersion 18
+        minSdkVersion 19
+        targetSdkVersion 20
+        versionCode 1
+        versionName "1.0"
 
         ndk {
             moduleName "jhead_jni"
@@ -17,9 +18,8 @@ android {
 
     buildTypes {
         release {
-            jniDebugBuild false
             runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
@@ -32,37 +32,36 @@ android {
 
     productFlavors {
         x86 {
-            versionCode Integer.parseInt("6" + defaultConfig.versionCode)
+            versionCode 600000 + defaultConfig.versionCode
             ndk {
                 abiFilter "x86"
             }
         }
         mips {
-            versionCode Integer.parseInt("4" + defaultConfig.versionCode)
+            versionCode 400000 + defaultConfig.versionCode
             ndk {
                 abiFilter "mips"
             }
         }
         armv7 {
-            versionCode Integer.parseInt("2" + defaultConfig.versionCode)
+            versionCode 200000 + defaultConfig.versionCode
             ndk {
                 abiFilter "armeabi-v7a"
             }
         }
         armv {
-            versionCode Integer.parseInt("1" + defaultConfig.versionCode)
+            versionCode 100000 + defaultConfig.versionCode
             ndk {
                 abiFilter "armeabi"
             }
         }
+        fat {
+            // leave the version as-is and don't filter on the ABI
+        }
     }
 }
 
-// See http://ph0b.com/android-studio-gradle-and-ndk-integration/
-def getVersionCodeFromManifest() {
-    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
-    def pattern = java.util.regex.Pattern.compile("versionCode=\"(\\d+)\"")
-    def matcher = pattern.matcher(manifestFile.getText())
-    matcher.find()
-    return Integer.parseInt(matcher.group(1))
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
